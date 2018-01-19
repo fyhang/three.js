@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>饼图</title>
+	<script  src="JS_package/d3.v3.js"></script>
+	<style>
+
+	.arc text {
+	  font: 10px sans-serif;
+	  text-anchor: middle;
+	}
+
+	.arc path {
+	  stroke: #fff;
+	}
+
+	</style>
+</head>
+<body>
+
+	<script>
+
+		var width = 960,
+		    height = 500,
+		    radius = Math.min(width, height) / 2;
+
+		var color = d3.scale.ordinal()
+		    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+		var arc = d3.svg.arc()
+		    .outerRadius(radius - 10)
+		    .innerRadius(radius - 100);
+
+		var pie = d3.layout.pie()
+		    .sort(null)
+		    .value(function(d) { 
+		  		return d.number;  //设置画饼图使用的数值大小
+		  	});
+
+		var svg = d3.select("body").append("svg")
+		    .attr("width", width)
+		    .attr("height", height)
+		  	.append("g")
+		    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+
+		 var num=5;
+     var step=[200000.0,300000.0,330000.0,370000.0,400000.0,500000.0]
+		d3.csv("Data/mydata.csv", function(error, data) {
+		  if (error) throw error;
+
+		  var Result=[];	
+
+		  for (var i =0; i <num; i++) {
+		  	  Result[i]={};
+		      Result[i]["element"]=0;          //设置参数 接收强度值
+		      Result[i]["number"]=0;		      //强度范围计数
+		 }
+		 data.forEach(function (element,index,data) {
+		  	// body...
+		  	var element = data[index].Intensity;
+		  	
+		  	// console.log(element);
+			 for (var i =0; i <num; i++) {
+				 	if (element<step[i+1]&&element>step[i])
+				 	{
+				 		  Result[i]["element"]+=parseFloat(element);
+				      Result[i]["number"]++;	
+				 	}
+			 }
+
+		  })
+		 	console.log(Result);
+		  var g = svg.selectAll(".arc")
+		      .data(pie(Result))
+		      .enter().append("g")
+
+		      .attr("class", "arc");
+
+		  g.append("path")
+		      .attr("d", arc)
+		      .style("fill", function(d ,i) { //颜色渐变设置
+		      	console.log(d); 
+		      	cr=parseInt(step[i]/step[num]*255);
+		      	cg=parseInt(step[i]/step[num]*255);
+		      	cb=0;
+		      	return "RGB("+cr.toString() +","+cg.toString()+","+cb.toString()+")"; });
+
+		  g.append("text")
+		      .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+		      .attr("dy", ".35em")
+		      .text(function(d) { 
+		      	// console.log(d);
+		      		return (d.data.number)+'%';
+		      });
+		});
+
+
+</script>
+
+
+</body>
+</html>
